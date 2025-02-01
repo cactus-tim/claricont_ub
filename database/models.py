@@ -3,11 +3,7 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, String, Boolean, ARRAY, BigInteger, ForeignKey, Numeric, JSON, Date
 from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncAttrs
-
-from instance import SQL_URL_RC
-
-engine = create_async_engine(url=SQL_URL_RC, echo=True)
-async_session = async_sessionmaker(engine)
+from instance import async_session, engine
 
 
 class Base(AsyncAttrs, DeclarativeBase):
@@ -15,7 +11,7 @@ class Base(AsyncAttrs, DeclarativeBase):
 
 
 class User(Base):
-    __tablename__ = "user"
+    __tablename__ = "user2"
 
     id = Column(BigInteger, primary_key=True, nullable=False, index=True)
     is_superuser = Column(Boolean, default=False)
@@ -26,7 +22,7 @@ class Bot(Base):
 
     id = Column(Integer, primary_key=True, index=True, nullable=False, autoincrement=True)
     name = Column(String, nullable=False)
-    api_id = Column(Integer, nullable=False)
+    api_id = Column(BigInteger, nullable=False)
     api_hash = Column(String, nullable=False)
     # TODO: Add more fields
 
@@ -35,7 +31,7 @@ class Target(Base):
     __tablename__ = "target"
 
     id = Column(Integer, primary_key=True, index=True, nullable=False, autoincrement=True)
-    from_id = Column(BigInteger, foreign_key="user.tg_id", nullable=False)
+    from_id = Column(BigInteger, foreign_key="user2.tg_id", nullable=False)
     handler = Column(String, nullable=False)
     f_m = Column(Boolean, default=False)
     dialog = Column(String, default='')
