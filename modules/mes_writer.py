@@ -1,9 +1,7 @@
 import asyncio
 
 from database.req import get_all_targets, update_target
-
-
-message_text = "пупупу"
+from handlers.errors import gpt_assystent_mes, create_thread
 
 
 async def send_messages(clients, user_id, client_id=0):
@@ -17,8 +15,10 @@ async def send_messages(clients, user_id, client_id=0):
             if client_id == len(clients) - 1:
                 break
             sent_count = 0
+        thread_id = await create_thread()
+        message_text = await gpt_assystent_mes(thread_id)
         await clients[client_id].send_message(target.handler, message_text)
-        await update_target(target.handler, {"f_m": True})
+        await update_target(target.handler, {"f_m": True, 'dialog': thread_id})
         sent_count += 1
         await asyncio.sleep(10)
         return client_id

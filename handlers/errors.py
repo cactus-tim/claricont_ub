@@ -4,8 +4,9 @@ from aiogram.types import ReplyKeyboardRemove, Message
 from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter, TelegramUnauthorizedError, TelegramNetworkError
 from functools import wraps
+from openai import AuthenticationError, RateLimitError, APIConnectionError, APIError
 
-from instance import logger, bot
+from instance import logger, bot, client
 from aiohttp import ClientConnectorError
 from errors.errors import *
 
@@ -81,3 +82,58 @@ async def safe_send_message(bott: Bot, recipient, text: str, reply_markup=ReplyK
         except Exception as e:
             logger.error(str(e))
             return None
+
+
+def gpt_error_handler(func):
+    @wraps(func)
+    async def wrapper(*args, retry_attempts=3, delay_between_retries=5, **kwargs):
+        for attempt in range(retry_attempts):
+            try:
+                return await func(*args, **kwargs)
+            except AuthenticationError as e:
+                logger.exception(f"Authentication Error: {e}")
+                return None
+            except RateLimitError as e:
+                logger.exception(f"Rate Limit Exceeded: {e}")
+                return None
+            except APIConnectionError as e:
+                logger.exception(f"API Connection Error: {e}. Try {attempt + 1}/{retry_attempts}")
+                if attempt < retry_attempts - 1:
+                    await asyncio.sleep(delay_between_retries)
+                else:
+                    logger.exception(f"API Connection Error: {e}. All attempts spent {attempt + 1}/{retry_attempts}")
+                    return None
+            except APIError as e:
+                logger.exception(f"API Error: {e}")
+                return None
+            except Exception as e:
+                logger.exception(f"Неизвестная ошибка: {str(e)}")
+                return None
+    return wrapper
+
+
+@gpt_error_handler
+async def create_thread():
+    thread = client.beta.threads.create()
+    return thread.id
+
+
+@gpt_error_handler
+async def gpt_assystent_mes(thread_id, assistant_id='asst_QO6GgoF3EQipGmGXv5YX9LdD', mes="давай начнем"):
+    message = client.beta.threads.messages.create(
+        thread_id=thread_id,
+        role="user",
+        content=mes
+    )
+
+    run = client.beta.threads.runs.create_and_poll(
+        thread_id=thread_id,
+        assistant_id=assistant_id,
+    )
+
+    messages = client.beta.threads.messages.list(thread_id=thread_id)
+    data = messages.data[0].content[0].text.value.strip()
+    if not data:
+        raise ContentError
+    else:
+        return data

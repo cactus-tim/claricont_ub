@@ -2,6 +2,7 @@ from pyrogram import filters
 
 
 from database.req import get_target
+from handlers.errors import gpt_assystent_mes
 
 
 def setup_handlers(client):
@@ -12,5 +13,5 @@ def setup_handlers(client):
             return
         if not target.f_m:
             return
-        message_text = 'fgfgffg'  # TODO: generate message text
+        message_text = await gpt_assystent_mes(target.dialog, mes=message.text)
         await client.send_message(target.handler, message_text)

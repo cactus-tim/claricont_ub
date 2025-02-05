@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 import sys
 from aiogram.client.bot import DefaultBotProperties
+from openai import OpenAI
 import logging
 import asyncio
 from pyrogram import Client
@@ -42,3 +43,7 @@ logging.basicConfig(
 
 
 logger = logging.getLogger(__name__)
+
+
+token = os.getenv('TOKEN_API_GPT')
+client = OpenAI(api_key=token)
