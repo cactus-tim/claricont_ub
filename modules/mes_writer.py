@@ -21,4 +21,4 @@ async def send_messages(clients, user_id, client_id=0):
         await update_target(target.handler, {"f_m": True, 'dialog': thread_id})
         sent_count += 1
         await asyncio.sleep(10)
-        return client_id
+    return client_id
