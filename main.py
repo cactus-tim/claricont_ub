@@ -35,7 +35,8 @@ async def schedule_tasks(clients, users):
         for user in users:
             client_id = await send_messages(clients, user.id, client_id)
 
-    scheduler.add_job(daily_task, 'interval', days=1)
+    scheduler.add_job(daily_task, 'interval', days=1, start_date='2023-10-01 12:00:00', timezone='Europe/Moscow')
+    await daily_task()
     scheduler.start()
 
 
@@ -66,7 +67,7 @@ async def main() -> None:
     await schedule_tasks(clients, users)
 
     try:
-        await send_messages(clients, 483458201)
+        # await send_messages(clients, 483458201)
         await dp.start_polling(bot, skip_updates=True)
     except Exception as _ex:
         print(f'Exception: {_ex}')
