@@ -1,8 +1,5 @@
 from pyrogram import Client
 
-api_id = 28296591
-api_hash = "3234f11d4741f02943e2a1291f33c2cc"
-
 with Client("my_account", api_id=api_id, api_hash=api_hash) as app:
     session_string = app.export_session_string()
     print(f"Ваша строка сессии: {session_string}")
