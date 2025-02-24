@@ -19,6 +19,8 @@ async def send_messages(clients, user_id, client_id=0):
             sent_count = 0
         thread_id = await create_thread()
         message_text = await gpt_assystent_mes(thread_id)
+        if message_text[-6:-2] == '.docx':
+            message_text = message_text[:-17]
         await clients[client_id].send_message(target.handler, message_text)
         await update_target(target.handler, {"f_m": True, 'dialog': thread_id})
         sent_count += 1
