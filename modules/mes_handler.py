@@ -1,3 +1,4 @@
+import asyncio
 import random
 import time
 from pyrogram import filters
@@ -29,11 +30,11 @@ def setup_handlers(client):
         if not target or not target.f_m:
             return
 
-        time.sleep(random.randint(10, 3600))
+        await asyncio.sleep(random.randint(10, 180))
 
         message_text = await gpt_assystent_mes(target.dialog, mes=message.text)
 
         await client.send_chat_action(message.chat.id, ChatAction.TYPING)
-        time.sleep(random.randint(5, 15))
+        await asyncio.sleep(random.randint(5, 15))
 
         await client.send_message(target.handler, message_text, disable_notification=True)
