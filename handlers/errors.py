@@ -119,7 +119,7 @@ async def create_thread():
 
 
 @gpt_error_handler
-async def gpt_assystent_mes(thread_id, assistant_id='asst_QO6GgoF3EQipGmGXv5YX9LdD', mes="давай начнем"):
+async def gpt_assystent_mes(thread_id, assistant_id='asst_DPaR6B9xcB5Phai0yFGwnqK9', mes="давай начнем"):
     message = client.beta.threads.messages.create(
         thread_id=thread_id,
         role="user",
