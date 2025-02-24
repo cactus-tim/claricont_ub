@@ -5,6 +5,7 @@ from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter, TelegramUnauthorizedError, TelegramNetworkError
 from functools import wraps
 from openai import AuthenticationError, RateLimitError, APIConnectionError, APIError
+from pyrogram.errors import FloodWait
 
 from instance import logger, bot, client
 from aiohttp import ClientConnectorError
@@ -109,6 +110,25 @@ def gpt_error_handler(func):
             except Exception as e:
                 logger.exception(f"Неизвестная ошибка: {str(e)}")
                 return None
+    return wrapper
+
+
+def bots_error_handler(func):
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        try:
+            return await func(*args, **kwargs)
+        except FloodWait as e:
+            logger.warning(f"Флуд-лимит: ждем {e.value} секунд...")
+            await asyncio.sleep(60)
+            client_id = kwargs.get("client_id", 0)
+            new_client_id = client_id + 1
+            logger.info(f"Повторная попытка с client_id={new_client_id}")
+            return await func(*args, **{**kwargs, "client_id": new_client_id})
+        except Exception as e:
+            logger.exception(f"Неизвестная ошибка: {str(e)}")
+            return None
+
     return wrapper
 
 

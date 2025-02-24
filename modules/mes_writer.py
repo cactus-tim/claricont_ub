@@ -2,16 +2,17 @@ import asyncio
 import random
 
 from database.req import get_all_targets, update_target
-from handlers.errors import gpt_assystent_mes, create_thread
+from handlers.errors import gpt_assystent_mes, create_thread, bots_error_handler
 
 
+@bots_error_handler
 async def send_messages(clients, user_id, client_id=0):
     sent_count = 0
     targets = await get_all_targets(user_id)
     for target in targets:
         if target.f_m:
             continue
-        if sent_count >= 18:
+        if sent_count >= 6:
             client_id += 1
             if client_id == len(clients) - 1:
                 break

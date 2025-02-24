@@ -68,7 +68,7 @@ async def main() -> None:
     await schedule_tasks(clients, users)
 
     try:
-        # await send_messages(clients, 483458201)
+        await send_messages(clients, 52786051)
         await dp.start_polling(bot, skip_updates=True)
     except Exception as _ex:
         print(f'Exception: {_ex}')
