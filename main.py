@@ -64,8 +64,8 @@ async def main() -> None:
         await client.start()
         await client.send_message('@If9090', "Ready")
 
-    # users = await get_all_users()
-    # await schedule_tasks(clients, users)
+    users = await get_all_users()
+    await schedule_tasks(clients, users)
 
     try:
         # await send_messages(clients, 483458201)
