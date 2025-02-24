@@ -1,4 +1,5 @@
 import asyncio
+import random
 
 from database.req import get_all_targets, update_target
 from handlers.errors import gpt_assystent_mes, create_thread
@@ -20,5 +21,5 @@ async def send_messages(clients, user_id, client_id=0):
         await clients[client_id].send_message(target.handler, message_text)
         await update_target(target.handler, {"f_m": True, 'dialog': thread_id})
         sent_count += 1
-        await asyncio.sleep(180)
+        await asyncio.sleep(random.randint(180, 720))
     return client_id
