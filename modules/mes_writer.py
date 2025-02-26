@@ -34,7 +34,13 @@ async def send_messages(clients, user_id, client_id=0):
         )
         try:
             await clients[client_id].send_message(target.handler, mes)
-        except UsernameNotOccupied or UsernameInvalid or UsernameNotModified as e:
+        except UsernameNotOccupied as e:
+            await update_target(target.handler, {"f_m": True})
+            continue
+        except UsernameInvalid as e:
+            await update_target(target.handler, {"f_m": True})
+            continue
+        except UsernameNotModified as e:
             await update_target(target.handler, {"f_m": True})
             continue
         await update_target(target.handler, {"f_m": True, 'dialog': thread_id})
