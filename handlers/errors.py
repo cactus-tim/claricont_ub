@@ -124,11 +124,11 @@ def bots_error_handler(func):
             client_id = kwargs.get("client_id", 0)
             new_client_id = client_id + 1
             logger.info(f"Повторная попытка с client_id={new_client_id}")
-            return await func(*args, **{**kwargs, "client_id": new_client_id})
+            kwargs["client_id"] = new_client_id
+            return await func(*args, **kwargs)
         except Exception as e:
             logger.exception(f"Неизвестная ошибка: {str(e)}")
-            client_id = kwargs.get("client_id", 0)
-            return await func(*args, **{**kwargs, "client_id": client_id})
+            return None
 
     return wrapper
 

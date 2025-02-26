@@ -1,6 +1,8 @@
 import asyncio
 import random
 
+from pyrogram.errors import UsernameNotOccupied
+
 from database.req import get_all_targets, update_target
 from handlers.errors import gpt_assystent_mes, create_thread, bots_error_handler
 from instance import client
@@ -30,7 +32,11 @@ async def send_messages(clients, user_id, client_id=0):
             role="assistant",
             content=mes
         )
-        await clients[client_id].send_message(target.handler, mes)
+        try:
+            await clients[client_id].send_message(target.handler, mes)
+        except UsernameNotOccupied as e:
+            await update_target(target.handler, {"f_m": True})
+            continue
         await update_target(target.handler, {"f_m": True, 'dialog': thread_id})
         sent_count += 1
         await asyncio.sleep(random.randint(180, 720))
