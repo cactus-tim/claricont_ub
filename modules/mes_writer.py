@@ -1,7 +1,7 @@
 import asyncio
 import random
 
-from pyrogram.errors import UsernameNotOccupied
+from pyrogram.errors import UsernameNotOccupied, UsernameInvalid, UsernameNotModified
 
 from database.req import get_all_targets, update_target
 from handlers.errors import gpt_assystent_mes, create_thread, bots_error_handler
@@ -34,7 +34,7 @@ async def send_messages(clients, user_id, client_id=0):
         )
         try:
             await clients[client_id].send_message(target.handler, mes)
-        except UsernameNotOccupied as e:
+        except UsernameNotOccupied or UsernameInvalid or UsernameNotModified as e:
             await update_target(target.handler, {"f_m": True})
             continue
         await update_target(target.handler, {"f_m": True, 'dialog': thread_id})
