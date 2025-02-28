@@ -2,12 +2,13 @@ import asyncio
 from aiogram import Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from pyrogram.errors import UserDeactivatedBan
 from pyrogram.session import Session
 
 from confige import BotConfig
 from database.req import *
 from handlers import errors, user
-from instance import bot, scheduler, Client
+from instance import bot, scheduler, Client, logger
 from database.models import async_main
 from modules.mes_writer import send_messages
 from modules.mes_handler import setup_handlers
@@ -61,8 +62,13 @@ async def main() -> None:
     clients = await init_accounts()
     for client in clients:
         setup_handlers(client)
-        await client.start()
-        await client.send_message('@If9090', "Ready")
+        try:
+            await client.start()
+            await client.send_message('@If9090', "Ready")
+        except UserDeactivatedBan as e:
+            logger.warning(f"Клиент с api_id {client.api_id} заблокирован: {e}")
+            await bot.send_message(483458201, text=f"Клиент с api_id {client.api_id} заблокирован")
+            continue
 
     users = await get_all_users()
     await schedule_tasks(clients, users)
