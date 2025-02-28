@@ -5,7 +5,7 @@ from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter, TelegramUnauthorizedError, TelegramNetworkError
 from functools import wraps
 from openai import AuthenticationError, RateLimitError, APIConnectionError, APIError
-from pyrogram.errors import FloodWait
+from pyrogram.errors import FloodWait, UserDeactivatedBan
 
 from instance import logger, bot, client
 from aiohttp import ClientConnectorError
@@ -117,6 +117,13 @@ def bots_error_handler(func):
     @wraps(func)
     async def wrapper(*args, **kwargs):
         try:
+            return await func(*args, **kwargs)
+        except UserDeactivatedBan as e:
+            client_id = kwargs.get("client_id", 0)
+            logger.warning(f"Пользователь {client_id} заблокирован: {e}")
+            await safe_send_message(bot, 483458201, text=f"Пользователь {client_id} заблокирован: {e}")
+            new_client_id = client_id + 1
+            kwargs["client_id"] = new_client_id
             return await func(*args, **kwargs)
         except FloodWait as e:
             logger.warning(f"Флуд-лимит: ждем {e.value} секунд...")
