@@ -21,7 +21,7 @@ async def send_messages(clients, user_id, client_id=0):
     for target in targets:
         if target.f_m:
             continue
-        if sent_count >= 6:
+        if sent_count >= 10:
             client_id += 1
             if client_id == len(clients) - 1:
                 break

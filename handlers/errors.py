@@ -124,6 +124,7 @@ def bots_error_handler(func):
             client_id = kwargs.get("client_id", 0)
             new_client_id = client_id + 1
             logger.info(f"Повторная попытка с client_id={new_client_id}")
+            await safe_send_message(bot, 483458201, text=f"Повтор для {client_id} надо проверить сколько получилось")
             kwargs["client_id"] = new_client_id
             return await func(*args, **kwargs)
         except Exception as e:
