@@ -60,21 +60,22 @@ async def main() -> None:
     register_routers(dp)
 
     clients = await init_accounts()
+    good_clients = []
     for client in clients:
         setup_handlers(client)
         try:
             await client.start()
             await client.send_message('@If9090', "Ready")
+            good_clients.append(client)
         except UserDeactivatedBan as e:
             logger.warning(f"Клиент с api_id {client.api_id} заблокирован: {e}")
             await bot.send_message(483458201, text=f"Клиент с api_id {client.api_id} заблокирован")
             await delete_bot(client.api_id)
-            clients.remove(client)
             await bot.send_message(483458201, text=f"Клиент с api_id {client.api_id} удален")
             continue
 
     users = await get_all_users()
-    await schedule_tasks(clients, users)
+    await schedule_tasks(good_clients, users)
 
     try:
         # await send_messages(clients, 483458201)
@@ -82,7 +83,8 @@ async def main() -> None:
     except Exception as _ex:
         print(f'Exception: {_ex}')
     finally:
-        await shutdown(clients)
+        await bot.send_message(483458201, text="We are down")
+        await shutdown(good_clients)
 
 
 if __name__ == '__main__':
