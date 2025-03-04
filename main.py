@@ -34,10 +34,10 @@ async def schedule_tasks(clients, users):
     async def daily_task():
         client_id = 0
         for user in users:
-            client_id = await send_messages(clients, user.id, client_id)
+            client_id = await send_messages(clients, user.id, client_id=client_id)
 
     scheduler.add_job(daily_task, 'interval', days=1, start_date='2023-10-01 12:00:00', timezone='Europe/Moscow')
-    # await daily_task()
+    await daily_task()
     scheduler.start()
 
 
@@ -68,13 +68,16 @@ async def main() -> None:
         except UserDeactivatedBan as e:
             logger.warning(f"Клиент с api_id {client.api_id} заблокирован: {e}")
             await bot.send_message(483458201, text=f"Клиент с api_id {client.api_id} заблокирован")
+            await delete_bot(client.api_id)
+            clients.remove(client)
+            await bot.send_message(483458201, text=f"Клиент с api_id {client.api_id} удален")
             continue
 
     users = await get_all_users()
     await schedule_tasks(clients, users)
 
     try:
-        # await send_messages(clients, 52786051)
+        # await send_messages(clients, 483458201)
         await dp.start_polling(bot, skip_updates=True)
     except Exception as _ex:
         print(f'Exception: {_ex}')

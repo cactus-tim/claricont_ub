@@ -119,9 +119,10 @@ def bots_error_handler(func):
         try:
             return await func(*args, **kwargs)
         except UserDeactivatedBan as e:
+            clients = args[0]
             client_id = kwargs.get("client_id", 0)
-            logger.warning(f"Пользователь {client_id} заблокирован: {e}")
-            await safe_send_message(bot, 483458201, text=f"Пользователь {client_id} заблокирован: {e}")
+            logger.warning(f"Пользователь {clients[client_id].api_id} заблокирован: {e}")
+            await safe_send_message(bot, 483458201, text=f"Пользователь {clients[client_id].api_id} заблокирован")
             new_client_id = client_id + 1
             kwargs["client_id"] = new_client_id
             return await func(*args, **kwargs)
@@ -131,7 +132,8 @@ def bots_error_handler(func):
             client_id = kwargs.get("client_id", 0)
             new_client_id = client_id + 1
             logger.info(f"Повторная попытка с client_id={new_client_id}")
-            await safe_send_message(bot, 483458201, text=f"Повтор для {client_id} надо проверить сколько получилось")
+            clients = args[0]
+            await safe_send_message(bot, 483458201, text=f"Повтор для {clients[client_id].api_id} надо проверить сколько получилось")
             kwargs["client_id"] = new_client_id
             return await func(*args, **kwargs)
         except Exception as e:

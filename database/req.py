@@ -29,6 +29,17 @@ async def add_bot(data: dict):
 
 
 @db_error_handler
+async def delete_bot(api_id: int):
+    async with async_session() as session:
+        bot = await session.scalar(select(Bot).where(Bot.api_id == api_id))
+        if bot:
+            await session.delete(bot)
+            await session.commit()
+        else:
+            raise Error404
+
+
+@db_error_handler
 async def get_target(handler: str):
     async with async_session() as session:
         target = await session.scalar(select(Target).where(Target.handler == handler))
