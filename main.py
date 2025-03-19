@@ -38,7 +38,6 @@ async def schedule_tasks(clients, users):
 
     scheduler.add_job(daily_task, 'interval', days=1, start_date='2023-10-01 12:00:00', timezone='Europe/Moscow')
     await daily_task()
-    scheduler.start()
 
 
 async def shutdown(clients):
@@ -58,6 +57,8 @@ async def main() -> None:
     dp["config"] = config
 
     register_routers(dp)
+
+    scheduler.start()
 
     clients = await init_accounts()
     good_clients = []

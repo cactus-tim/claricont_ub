@@ -4,8 +4,11 @@ import time
 from pyrogram import filters
 from pyrogram.enums import ChatAction
 
-from database.req import get_target
+from database.req import get_target, update_target
 from handlers.errors import gpt_assystent_mes
+
+
+pending_replies = {}
 
 
 async def code_finder(msg: str) -> int:
@@ -30,11 +33,31 @@ def setup_handlers(client):
         if not target or not target.f_m:
             return
 
-        await asyncio.sleep(random.randint(10, 180))
+        if not target.f_a:
+            await update_target(message.from_user.username, {'f_a': True})
 
-        message_text = await gpt_assystent_mes(target.dialog, mes=message.text)
+        user_id = message.from_user.id
 
-        await client.send_chat_action(message.chat.id, ChatAction.TYPING)
+        if user_id not in pending_replies:
+            pending_replies[user_id] = {
+                'messages': [message.text],
+                'task': asyncio.create_task(handle_pending(client, message.chat.id, target, user_id))
+            }
+        else:
+            pending_replies[user_id]['messages'].append(message.text)
+
+    async def handle_pending(client, chat_id, target, user_id):
+        await asyncio.sleep(180)
+        await client.read_chat_history(chat_id)
+        messages = pending_replies[user_id]['messages']
+        combined_message = "\n".join(messages)
+        del pending_replies[user_id]
+
+        await asyncio.sleep(random.randint(10, 70))
+        response_text: str = await gpt_assystent_mes(target.dialog, mes=combined_message)
+        if response_text.find(''):  # TODO: add link to our bot
+            if not target.l_m:
+                await update_target(target.handler, {'l_m': True})
+        await client.send_chat_action(chat_id, ChatAction.TYPING)
         await asyncio.sleep(random.randint(5, 15))
-
-        await client.send_message(target.handler, message_text, disable_notification=True)
+        await client.send_message(target.handler, response_text, disable_notification=True)

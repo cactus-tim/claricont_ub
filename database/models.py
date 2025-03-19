@@ -34,6 +34,8 @@ class Target(Base):
     from_id = Column(BigInteger, foreign_key="user2.tg_id", nullable=False)
     handler = Column(String, nullable=False)
     f_m = Column(Boolean, default=False)
+    f_a = Column(Boolean, default=False)
+    l_m = Column(Boolean, default=False)
     dialog = Column(String, default='')
 
 

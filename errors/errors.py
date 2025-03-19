@@ -24,3 +24,4 @@ class ContentError(CustomError):
     def __init__(self, message="GPT response is incorrect"):
         self.message = message
         super().__init__(self.message)
+        
