@@ -76,7 +76,7 @@ async def main() -> None:
             continue
 
     users = await get_all_users()
-    await schedule_tasks(good_clients, users)
+    # await schedule_tasks(good_clients, users)
 
     try:
         # await send_messages(clients, 483458201)
