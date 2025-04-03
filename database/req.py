@@ -13,6 +13,13 @@ async def get_all_bots():
 
 
 @db_error_handler
+async def get_all_bots_names():
+    async with async_session() as session:
+        bots = await session.execute(select(Bot.name))
+        return bots.scalars().all()
+
+
+@db_error_handler
 async def get_all_targets(user_id: int):
     async with async_session() as session:
         targets = await session.execute(select(Target).where(Target.from_id == user_id))
@@ -26,6 +33,26 @@ async def add_bot(data: dict):
         session.add(bot)
         await session.commit()
         return bot
+
+
+@db_error_handler
+async def get_bot_status(api_id: int):
+    async with async_session() as session:
+        status = await session.scalar(select(Bot.status).where(Bot.api_id == api_id))
+        return status
+
+
+@db_error_handler
+async def update_bot(api_id: int, status: int):
+    async with async_session() as session:
+        bot = await session.scalar(select(Bot).where(Bot.api_id == api_id))
+        if bot:
+            setattr(bot, 'status', status)
+            session.add(bot)
+            await session.commit()
+            return bot
+        else:
+            raise Error404
 
 
 @db_error_handler

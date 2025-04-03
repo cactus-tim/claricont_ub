@@ -1,14 +1,16 @@
 import asyncio
+import random
+from datetime import datetime, timedelta
+
 from aiogram import Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from pyrogram.errors import UserDeactivatedBan
-from pyrogram.session import Session
 
 from confige import BotConfig
-from database.req import *
+from database.req import get_all_bots, get_all_users, delete_bot, update_bot, get_bot_status
 from handlers import errors, user
-from instance import bot, scheduler, Client, logger
+from instance import bot, scheduler, Client, logger, messages
 from database.models import async_main
 from modules.mes_writer import send_messages
 from modules.mes_handler import setup_handlers
@@ -18,16 +20,25 @@ async def init_accounts():
     accounts = []
     _accounts = await get_all_bots()
     for account in _accounts:
-        # client = Client(account.hash,
-        #                 session=Session(client=account.hash, dc_id=account.dc_id, auth_key=account.auth_key,
-        #                                 test_mode=account.test_mode))
-        client = Client(account.name, api_id=account.api_id, api_hash=account.api_id)
+        client = Client(account.name, api_id=account.api_id, api_hash=account.api_hash)
         accounts.append(client)
     return accounts
 
 
 def register_routers(dp: Dispatcher) -> None:
     dp.include_routers(errors.router, user.router)
+
+
+async def progrev(clients):
+    for idx, client in enumerate(clients):
+        status = await get_bot_status(client.api_id)
+        if status != 0:
+            continue
+        for _ in range(0, len(clients)//3):
+            r_id = random.randint(0, len(clients) - 1)
+            if r_id == idx:
+                continue
+            await client.send_message(clients[r_id].name, random.choice(messages))
 
 
 async def schedule_tasks(clients, users):
@@ -62,11 +73,24 @@ async def main() -> None:
 
     clients = await init_accounts()
     good_clients = []
+    status_updates = [(7, 20), (15, 40), (39, 50)]
+
     for client in clients:
         setup_handlers(client)
         try:
             await client.start()
             await client.send_message('@If9090', "Ready")
+            for days, new_status in status_updates:
+                job_id = f"status_update_{client.api_id}_{days}"
+                if not scheduler.get_job(job_id):
+                    run_date = datetime.now() + timedelta(days=days)
+                    scheduler.add_job(
+                        update_bot,
+                        trigger='date',
+                        run_date=run_date,
+                        args=[client.api_id, new_status],
+                        id=job_id
+                    )
             good_clients.append(client)
         except UserDeactivatedBan as e:
             logger.warning(f"Клиент с api_id {client.api_id} заблокирован: {e}")
@@ -76,10 +100,10 @@ async def main() -> None:
             continue
 
     users = await get_all_users()
-    # await schedule_tasks(good_clients, users)
+    await progrev(good_clients)
+    await schedule_tasks(good_clients, users)
 
     try:
-        # await send_messages(clients, 483458201)
         await dp.start_polling(bot, skip_updates=True)
     except Exception as _ex:
         print(f'Exception: {_ex}')

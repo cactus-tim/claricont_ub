@@ -24,6 +24,7 @@ class Bot(Base):
     name = Column(String, nullable=False)
     api_id = Column(BigInteger, nullable=False)
     api_hash = Column(String, nullable=False)
+    status = Column(Integer, nullable=False, default=0)  # 20, 40, 50
     # TODO: Add more fields
 
 
