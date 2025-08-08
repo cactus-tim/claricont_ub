@@ -15,5 +15,5 @@ async def main(api_id, api_hash, name) -> None:
 
 
 if __name__ == '__main__':
-    asyncio.run(main(28296591, '3234f11d4741f02943e2a1291f33c2cc', 'ei8080'))
+    asyncio.run(main())
 
